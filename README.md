@@ -1,1 +1,1 @@
-# birateral-filter
+# bilateral-filter
