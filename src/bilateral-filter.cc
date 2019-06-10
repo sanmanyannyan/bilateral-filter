@@ -4,33 +4,39 @@
 #include "bilateral-filter.h"
 
 
-bilateralFilterF32::bilateralFilterF32() : m_kernel_size(3), m_sigma_color(1.f), m_sigma_space(1.f), w_center(1) {
-	exp_weights = new float[m_kernel_size * m_kernel_size];
+bilateralFilterF32::bilateralFilterF32() : m_kernel_size(3), m_sigma_color(1.f), m_sigma_space(1.f), kernel_center(1) {
+	size_t allocation_kernel_size = static_cast<size_t>(m_kernel_size);
+	exp_weights = new float[allocation_kernel_size * allocation_kernel_size];
+	compute_exp_weight();
 }
 
-bilateralFilterF32::bilateralFilterF32(int32_t kernel_size, float sigma_color, float sigma_space) : m_kernel_size(kernel_size), m_sigma_color(sigma_color), m_sigma_space(sigma_space), w_center((kernel_size - 1) / 2) {
-	exp_weights = new float[m_kernel_size * m_kernel_size];
+bilateralFilterF32::bilateralFilterF32(int32_t kernel_size, float sigma_color, float sigma_space) : m_kernel_size(kernel_size), m_sigma_color(sigma_color), m_sigma_space(sigma_space), kernel_center((kernel_size - 1) / 2) {
+	size_t allocation_kernel_size = static_cast<size_t>(m_kernel_size);
+	exp_weights = new float[allocation_kernel_size * allocation_kernel_size];
+	compute_exp_weight();
 }
 
 void bilateralFilterF32::set_kernel_size(int32_t kernel_size) {
 	assert(kernel_size > 0);
 	if(m_kernel_size < kernel_size){
 		delete[] exp_weights;
-		exp_weights = new float[kernel_size * kernel_size];	
+		size_t allocation_kernel_size = static_cast<size_t>(m_kernel_size);
+		exp_weights = new float[allocation_kernel_size * allocation_kernel_size];
 	}
 	m_kernel_size = kernel_size;
+	kernel_center = kernel_size >> 1;
 	compute_exp_weight();
 }
 
 void bilateralFilterF32::set_sigma_color(float sigma_color) {
 	assert(sigma_color != 0.f);
 	m_sigma_color = sigma_color;
+	compute_exp_weight();
 }
 
 void bilateralFilterF32::set_sigma_space(float sigma_space) {
 	assert(sigma_space != 0.f);
 	m_sigma_space = sigma_space;
-	compute_exp_weight();
 }
 
 int32_t bilateralFilterF32::get_kernel_size() {
@@ -41,7 +47,7 @@ float bilateralFilterF32::get_sigma_color() {
 	return m_sigma_color;
 }
 
-float bilateralFilterF32::set_sigma_space() {
+float bilateralFilterF32::get_sigma_space() {
 	return m_sigma_space;
 }
 
@@ -70,12 +76,12 @@ void bilateralFilterF32::filter(float *dst, const float* src, int32_t width, int
 void bilateralFilterF32::compute_exp_weight(){
 	const float rcp_exp_arg_denom = -1.f / 2. * m_sigma_color * m_sigma_color;
 	int32_t kernel_idx = 0;
-	for(int32_t y = -w_center ; y < m_kernel_size - w_center ; ++y) {
-		for(int32_t x = -w_center ; x < m_kernel_size - w_center; ++x) {
+	for(int32_t y = -kernel_center; y < m_kernel_size - kernel_center; ++y) {
+		for(int32_t x = -kernel_center; x < m_kernel_size - kernel_center; ++x) {
 			float exp_arg = (x * x + y * y) * rcp_exp_arg_denom;
 			exp_weights[kernel_idx++] = std::exp(exp_arg);
 		}
 	}
-	assert(kernel_idx == kernel_size * kernel_size);
+	assert(kernel_idx == m_kernel_size * m_kernel_size);
 }
 
