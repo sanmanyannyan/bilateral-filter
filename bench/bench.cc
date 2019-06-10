@@ -7,7 +7,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-//#include "bilateral-filter.h"
+#include "bilateral-filter.h"
 
 size_t bilateral_filter_iterations = 5;
 int bilateral_filter_diameter = 5;

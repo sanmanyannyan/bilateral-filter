@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 
-add_executable(bench bench.cc)
+add_executable(bench bench.cc ../src/bilateral-filter.cc)
+include_directories(../inc)
+
 
 # for OpenCV
 find_package(OpenCV REQUIRED)
